@@ -1,16 +1,14 @@
 package com.takeaway.pay.entity;
 
-import java.math.BigDecimal;
-
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
+@Getter
 public class Transaction {
 
-    @Getter
     private final long customerId;
-    @Getter
     private final long restaurantId;
-    @Getter
     private final BigDecimal transferAmount;
 
     public Transaction(long customerId, long restaurantId, BigDecimal transferAmount) {
@@ -18,5 +16,5 @@ public class Transaction {
         this.restaurantId = restaurantId;
         this.transferAmount = transferAmount;
     }
-    
+
 }

@@ -1,16 +1,15 @@
 package com.takeaway.pay.service.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.takeaway.pay.entity.CustomerAllowance;
 import com.takeaway.pay.entity.RestaurantAccount;
 import com.takeaway.pay.exception.PayException;
 import com.takeaway.pay.service.PayService;
-
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class InMemoryPayService implements PayService {
@@ -21,7 +20,7 @@ public class InMemoryPayService implements PayService {
     private final ConcurrentMap<Long, RestaurantAccount> restaurantAccounts = new ConcurrentHashMap<>();
     private final ConcurrentMap<Long, BigDecimal> dailyAmountTransferredPerCustomer = new ConcurrentHashMap<>();
 
-    
+
     @Override
     public void createCustomerAllowance(long customerId) {
         customerAllowances.putIfAbsent(customerId, new CustomerAllowance(customerId));
@@ -30,8 +29,8 @@ public class InMemoryPayService implements PayService {
     @Override
     public void topUpCustomerAllowance(long customerId, BigDecimal topUpAmount) {
         CustomerAllowance customerAllowance = customerAllowances.get(customerId);
-        if(customerAllowance != null) {
-            synchronized(customerAllowance) {
+        if (customerAllowance != null) {
+            synchronized (customerAllowance) {
                 customerAllowances.get(customerId).topUp(topUpAmount);
             }
         } else {
@@ -42,8 +41,8 @@ public class InMemoryPayService implements PayService {
     @Override
     public BigDecimal getCustomerAllowanceBalance(long customerId) {
         CustomerAllowance customerAllowance = customerAllowances.get(customerId);
-        if(customerAllowance != null) {
-            synchronized(customerAllowance) {
+        if (customerAllowance != null) {
+            synchronized (customerAllowance) {
                 return customerAllowance.getBalance();
             }
         } else {
@@ -59,8 +58,8 @@ public class InMemoryPayService implements PayService {
     @Override
     public BigDecimal getRestaurantAccountBalance(long restaurantId) {
         RestaurantAccount restaurantAccount = restaurantAccounts.get(restaurantId);
-        if(restaurantAccount != null) {
-            synchronized(restaurantAccount) {
+        if (restaurantAccount != null) {
+            synchronized (restaurantAccount) {
                 return restaurantAccount.getBalance();
             }
         } else {
@@ -70,21 +69,21 @@ public class InMemoryPayService implements PayService {
 
     //Not exposed directly to the world.
     protected boolean transfer(long customerId, long restaurantId, BigDecimal transferAmount, LocalDate transferDate) throws PayException {
-        
+
         String errorMsgs = transferPreChecks(customerId, restaurantId, transferAmount, transferDate);
-        if(errorMsgs != null && !errorMsgs.isBlank()) {
+        if (!errorMsgs.isBlank()) {
             throw new IllegalArgumentException(errorMsgs);
         }
 
         CustomerAllowance customerAllowance = customerAllowances.get(customerId);
         RestaurantAccount restaurantAccount = restaurantAccounts.get(restaurantId);
 
-        synchronized(customerAllowance) {
-            synchronized(restaurantAccount) {
+        synchronized (customerAllowance) {
+            synchronized (restaurantAccount) {
 
                 checkSufficientBalance(customerAllowance, transferAmount);
                 checkDailyLimit(customerAllowance, transferAmount, transferDate);
-                
+
                 LocalDate lastDeductionDate = customerAllowance.getLastDeductionDate();
 
                 try {
@@ -113,19 +112,19 @@ public class InMemoryPayService implements PayService {
     }
 
     private void checkDailyLimit(CustomerAllowance customerAllowance, BigDecimal transferAmount, LocalDate transferDate) throws PayException {
-        if(transferAmount.compareTo(DAILY_LIMIT_IN_EUR) > 0) {
+        if (transferAmount.compareTo(DAILY_LIMIT_IN_EUR) > 0) {
             throw new PayException(DAILY_LIMIT_ERROR_MSG);
         }
         LocalDate lastDeductionDate = customerAllowance.getLastDeductionDate();
-        if(lastDeductionDate != null && transferDate.isEqual(lastDeductionDate)) {
+        if (lastDeductionDate != null && transferDate.isEqual(lastDeductionDate)) {
             BigDecimal totalTransferAmount = dailyAmountTransferredPerCustomer.get(customerAllowance.getCustomerId());
-            if(totalTransferAmount != null) {
+            if (totalTransferAmount != null) {
 
                 totalTransferAmount = totalTransferAmount.add(transferAmount);
-                if(totalTransferAmount.compareTo(DAILY_LIMIT_IN_EUR) > 0) {
+                if (totalTransferAmount.compareTo(DAILY_LIMIT_IN_EUR) > 0) {
                     throw new PayException(DAILY_LIMIT_ERROR_MSG);
                 }
-                
+
             } else {//Should not happen
                 throw new IllegalStateException("If lastDeductionDate is NOT Null then totalTransferAmout for that date cannot be NULL");
             }
@@ -141,27 +140,25 @@ public class InMemoryPayService implements PayService {
     }
 
     private String transferPreChecks(long customerId, long restaurantId, BigDecimal transferAmount,
-            LocalDate transferDate) {
-        StringBuilder errorMsgs = new StringBuilder("");
-        if(transferDate == null){
+                                     LocalDate transferDate) {
+        StringBuilder errorMsgs = new StringBuilder();
+        if (transferDate == null) {
             errorMsgs.append("TransferDate cannot be null.");
         }
-        if(!customerAllowances.containsKey(customerId)) {
+        if (!customerAllowances.containsKey(customerId)) {
             errorMsgs.append("Customer with Id : " + customerId + " does not exist!");
         }
-        if(!restaurantAccounts.containsKey(restaurantId)) {
-            errorMsgs.append("Restaurant with id : " + restaurantId + " does not exist!");
+        if (!restaurantAccounts.containsKey(restaurantId)) {
+            errorMsgs.append("Restaurant with id : ").append(restaurantId).append(" does not exist!");
         }
-        if(transferAmount == null || BigDecimal.ZERO.compareTo(transferAmount) == 1) {
+        if (transferAmount == null || BigDecimal.ZERO.compareTo(transferAmount) == 1) {
             errorMsgs.append("Transfer amount cannot be negative");
         }
         return errorMsgs.toString();
     }
 
     @Override
-    public boolean transfer(long customerId, long restaurantId, BigDecimal transferAmount) throws PayException {
-        return transfer(customerId, restaurantId, transferAmount, LocalDate.now());
-    
+    public void transfer(long customerId, long restaurantId, BigDecimal transferAmount) throws PayException {
+        transfer(customerId, restaurantId, transferAmount, LocalDate.now());
     }
-    
 }

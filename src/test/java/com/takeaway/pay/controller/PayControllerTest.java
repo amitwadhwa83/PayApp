@@ -1,14 +1,8 @@
 package com.takeaway.pay.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.math.BigDecimal;
-import java.net.URI;
-
 import com.takeaway.pay.entity.TopUp;
 import com.takeaway.pay.entity.Transaction;
 import com.takeaway.pay.service.PayService;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +12,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.math.BigDecimal;
+import java.net.URI;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class PayControllerTest {
