@@ -40,25 +40,19 @@ public class InMemoryPayServiceTest {
     @Test
     public void testTopUpCustomerAllowance_NonExistentCustomer() {
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            payService.topUpCustomerAllowance(333, BigDecimal.valueOf(100.0));
-        });
+        assertThrows(IllegalArgumentException.class, () -> payService.topUpCustomerAllowance(333, BigDecimal.valueOf(100.0)));
     }
 
     @Test
     public void testCheckBalance_NonExistentCustomer() {
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            payService.getCustomerAllowanceBalance(333);
-        });
+        assertThrows(IllegalArgumentException.class, () -> payService.getCustomerAllowanceBalance(333));
     }
 
     @Test
     public void testCheckBalance_NonExistentRestaurant() {
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            payService.getRestaurantAccountBalance(333);
-        });
+        assertThrows(IllegalArgumentException.class, () -> payService.getRestaurantAccountBalance(333));
     }
 
     @Test
@@ -78,11 +72,8 @@ public class InMemoryPayServiceTest {
     }
 
     @Test
-    public void testTransfer_tooLargeFirstTransfer() throws PayException {
-
-        Throwable exception = assertThrows(PayException.class, () -> {
-            payService.transfer(VALID_CUST_ID, VALID_RESTAURANT_ID, BigDecimal.valueOf(12.0));
-        });
+    public void testTransfer_tooLargeFirstTransfer() {
+        Throwable exception = assertThrows(PayException.class, () -> payService.transfer(VALID_CUST_ID, VALID_RESTAURANT_ID, BigDecimal.valueOf(12.0)));
         assertEquals(InMemoryPayService.DAILY_LIMIT_ERROR_MSG, exception.getMessage());
 
     }
@@ -115,9 +106,7 @@ public class InMemoryPayServiceTest {
         assertEquals(BigDecimal.valueOf(1.0), payService.getCustomerAllowanceBalance(poorCust));
         assertEquals(BigDecimal.valueOf(4.0), payService.getRestaurantAccountBalance(VALID_RESTAURANT_ID));
 
-        Throwable exception = assertThrows(PayException.class, () -> {
-            payService.transfer(poorCust, VALID_RESTAURANT_ID, BigDecimal.valueOf(2.0));
-        });
+        Throwable exception = assertThrows(PayException.class, () -> payService.transfer(poorCust, VALID_RESTAURANT_ID, BigDecimal.valueOf(2.0)));
         assertEquals(InMemoryPayService.INSUFICUENT_FUNDS_ERROR_MSG, exception.getMessage());
 
     }
@@ -133,9 +122,7 @@ public class InMemoryPayServiceTest {
         assertEquals(BigDecimal.valueOf(10.0), payService.getCustomerAllowanceBalance(VALID_CUST_ID));
         assertEquals(BigDecimal.valueOf(10.0), payService.getRestaurantAccountBalance(VALID_RESTAURANT_ID));
 
-        Throwable exception = assertThrows(PayException.class, () -> {
-            payService.transfer(VALID_CUST_ID, VALID_RESTAURANT_ID, BigDecimal.valueOf(2.0));
-        });
+        Throwable exception = assertThrows(PayException.class, () -> payService.transfer(VALID_CUST_ID, VALID_RESTAURANT_ID, BigDecimal.valueOf(2.0)));
         assertEquals(InMemoryPayService.DAILY_LIMIT_ERROR_MSG, exception.getMessage());
 
     }

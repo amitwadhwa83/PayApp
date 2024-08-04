@@ -68,7 +68,7 @@ public class InMemoryPayService implements PayService {
     }
 
     //Not exposed directly to the world.
-    protected boolean transfer(long customerId, long restaurantId, BigDecimal transferAmount, LocalDate transferDate) throws PayException {
+    protected void transfer(long customerId, long restaurantId, BigDecimal transferAmount, LocalDate transferDate) throws PayException {
 
         String errorMsgs = transferPreChecks(customerId, restaurantId, transferAmount, transferDate);
         if (!errorMsgs.isBlank()) {
@@ -102,9 +102,7 @@ public class InMemoryPayService implements PayService {
                     ex.printStackTrace();
                     System.err.println("Rolling back Transfer");
                     //TODO: add logic to rollback, for now, in this simple case this should not occur
-                    return false;
                 }
-                return true;
 
             }
         }
@@ -146,7 +144,7 @@ public class InMemoryPayService implements PayService {
             errorMsgs.append("TransferDate cannot be null.");
         }
         if (!customerAllowances.containsKey(customerId)) {
-            errorMsgs.append("Customer with Id : " + customerId + " does not exist!");
+            errorMsgs.append("Customer with Id : ").append(customerId).append(" does not exist!");
         }
         if (!restaurantAccounts.containsKey(restaurantId)) {
             errorMsgs.append("Restaurant with id : ").append(restaurantId).append(" does not exist!");

@@ -127,7 +127,7 @@ public class PayControllerTest {
 	}
 
     @Test
-	public void integrationTest_badInput() throws Exception {
+	public void integrationTest_badInput() {
 
         String url = "http://localhost:"+ port +"/pay/";
         
